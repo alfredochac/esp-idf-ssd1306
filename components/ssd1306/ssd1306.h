@@ -2,6 +2,11 @@
 #define MAIN_SSD1306_H_
 
 #include "driver/spi_master.h"
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0))
+#include "driver/i2c_master.h"
+#else
+#include "driver/i2c.h"
+#endif
 
 // Following definitions are bollowed from 
 // http://robotcantalk.blogspot.com/2015/03/interfacing-arduino-with-ssd1306-driven.html
@@ -76,7 +81,9 @@ typedef enum {
 	SCROLL_LEFT = 2,
 	SCROLL_DOWN = 3,
 	SCROLL_UP = 4,
-	SCROLL_STOP = 5
+	PAGE_SCROLL_DOWN = 5,
+	PAGE_SCROLL_UP = 6,
+	SCROLL_STOP = 7
 } ssd1306_scroll_type_t;
 
 typedef struct {
@@ -91,13 +98,18 @@ typedef struct {
 	int _height;
 	int _pages;
 	int _dc;
-	spi_device_handle_t _SPIHandle;
 	bool _scEnable;
 	int _scStart;
 	int _scEnd;
 	int _scDirection;
 	PAGE_t _page[8];
 	bool _flip;
+	i2c_port_t _i2c_num;
+	spi_device_handle_t _spi_device_handle;
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0))
+	i2c_master_bus_handle_t _i2c_bus_handle;
+	i2c_master_dev_handle_t _i2c_dev_handle;
+#endif
 } SSD1306_t;
 
 #ifdef __cplusplus
@@ -114,6 +126,8 @@ void ssd1306_set_buffer(SSD1306_t * dev, uint8_t * buffer);
 void ssd1306_get_buffer(SSD1306_t * dev, uint8_t * buffer);
 void ssd1306_display_image(SSD1306_t * dev, int page, int seg, uint8_t * images, int width);
 void ssd1306_display_text(SSD1306_t * dev, int page, char * text, int text_len, bool invert);
+void ssd1306_display_text_box1(SSD1306_t * dev, int page, int seg, char * text, int box_width, int text_len, bool invert, int delay);
+void ssd1306_display_text_box2(SSD1306_t * dev, int page, int seg, char * text, int box_width, int text_len, bool invert, int delay);
 void ssd1306_display_text_x3(SSD1306_t * dev, int page, char * text, int text_len, bool invert);
 void ssd1306_clear_screen(SSD1306_t * dev, bool invert);
 void ssd1306_clear_line(SSD1306_t * dev, int page, bool invert);
@@ -123,27 +137,32 @@ void ssd1306_scroll_text(SSD1306_t * dev, char * text, int text_len, bool invert
 void ssd1306_scroll_clear(SSD1306_t * dev);
 void ssd1306_hardware_scroll(SSD1306_t * dev, ssd1306_scroll_type_t scroll);
 void ssd1306_wrap_arround(SSD1306_t * dev, ssd1306_scroll_type_t scroll, int start, int end, int8_t delay);
+void _ssd1306_bitmaps(SSD1306_t * dev, int xpos, int ypos, uint8_t * bitmap, int width, int height, bool invert);
 void ssd1306_bitmaps(SSD1306_t * dev, int xpos, int ypos, uint8_t * bitmap, int width, int height, bool invert);
 void _ssd1306_pixel(SSD1306_t * dev, int xpos, int ypos, bool invert);
 void _ssd1306_line(SSD1306_t * dev, int x1, int y1, int x2, int y2,  bool invert);
+void _ssd1306_circle(SSD1306_t * dev, int x0, int y0, int r, bool invert);
+void _ssd1306_cursor(SSD1306_t * dev, int x0, int y0, int r, bool invert);
 void ssd1306_invert(uint8_t *buf, size_t blen);
 void ssd1306_flip(uint8_t *buf, size_t blen);
 uint8_t ssd1306_copy_bit(uint8_t src, int srcBits, uint8_t dst, int dstBits);
 uint8_t ssd1306_rotate_byte(uint8_t ch1);
 void ssd1306_fadeout(SSD1306_t * dev);
+void ssd1306_rotate_image(uint8_t *image, bool flip);
+void ssd1306_display_rotate_text(SSD1306_t * dev, int seg, char * text, int text_len, bool invert);
 void ssd1306_dump(SSD1306_t dev);
 void ssd1306_dump_page(SSD1306_t * dev, int page, int seg);
 
-#if CONFIG_SPI_INTERFACE
-void spi_clock_speed(int speed);
-#endif
 void i2c_master_init(SSD1306_t * dev, int16_t sda, int16_t scl, int16_t reset);
+void i2c_device_add(SSD1306_t * dev, i2c_port_t i2c_num, int16_t reset, uint16_t i2c_address);
 void i2c_init(SSD1306_t * dev, int width, int height);
 void i2c_display_image(SSD1306_t * dev, int page, int seg, uint8_t * images, int width);
 void i2c_contrast(SSD1306_t * dev, int contrast);
 void i2c_hardware_scroll(SSD1306_t * dev, ssd1306_scroll_type_t scroll);
 
-void spi_master_init(SSD1306_t * dev, int16_t GPIO_MOSI, int16_t GPIO_SCLK, int16_t GPIO_CS, int16_t GPIO_DC, int16_t GPIO_RESET);
+void spi_clock_speed(int speed);
+void spi_master_init(SSD1306_t * dev, int16_t mosi, int16_t sclk, int16_t cs, int16_t dc, int16_t reset);
+void spi_device_add(SSD1306_t * dev, int16_t cs, int16_t dc, int16_t reset);
 bool spi_master_write_byte(spi_device_handle_t SPIHandle, const uint8_t* Data, size_t DataLength );
 bool spi_master_write_command(SSD1306_t * dev, uint8_t Command );
 bool spi_master_write_data(SSD1306_t * dev, const uint8_t* Data, size_t DataLength );

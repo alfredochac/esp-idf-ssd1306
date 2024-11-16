@@ -5,7 +5,8 @@ I used [this](https://github.com/yanbe/ssd1306-esp-idf-i2c) repository as a refe
 I used [this](https://github.com/dhepper/font8x8) font file.   
 
 # Software requirements
-ESP-IDF V4.4/V5.x.   
+ESP-IDF V5.0 or later.   
+ESP-IDF V4.4 release branch reached EOL in July 2024.   
 
 __Note for ESP32C2.__   
 ESP-IDF V5.0 ESP32C2 i2c driver has a bug.   
@@ -16,7 +17,7 @@ ESP-IDF V5.1 is required when using ESP32C6 and ESP32H2.
 
 __Note for ESP-IDF V5.2.__   
 A new i2c driver is now available in ESP-IDF V5.2.   
-Under ESP-IDF V5.2 this project uses a new i2c driver.   
+Under ESP-IDF V5.2 or later, this project uses a new i2c driver.   
 
 # Installation   
 
@@ -63,7 +64,8 @@ You have to set this config value with menuconfig.
 ![config-128x64_i2c](https://github.com/nopnop2002/esp-idf-ssd1306/assets/6020549/794645f9-9f95-4760-8a55-9befceb9349e)
 
 # Generic SH1106 128x64 i2c
-__Hardware scroll Not support__   
+Many sellers sell SH1106 as SSD1306.   
+__SH1106 does not support hardware scrolling.__   
 Left:1.3 inch SH1106   
 Right:0.96 inch SSD1306   
 
@@ -72,12 +74,13 @@ Right:0.96 inch SSD1306
 
 # 128x64 TTGO
 Unlike other ESP32 development boards, the RTC_CLOCK crystal on this board uses a 26MHz one.   
-You need to change the RTC CLOCK frequency to 26MHz using menuconfig.   
+You need to change the Main XTAL frequency to 26MHz using menuconfig.   
 
 ![ESP32-TTGO-1](https://user-images.githubusercontent.com/6020549/56449111-9764a600-6350-11e9-9902-e2ad1c4aefb0.JPG)
 ![ESP32-TTGO-2](https://user-images.githubusercontent.com/6020549/56449116-9a5f9680-6350-11e9-86ec-e06648118add.JPG)
 ![128x64_Reset](https://user-images.githubusercontent.com/6020549/56449118-9e8bb400-6350-11e9-9b90-1eb1f9fa8e99.JPG)
 ![config-128x64_TTGO](https://github.com/nopnop2002/esp-idf-ssd1306/assets/6020549/f234b8e0-ef4e-49db-ad78-bbc705649a18)
+![config-128x64_TTGO-2](https://github.com/user-attachments/assets/8744f2bc-704a-4385-9a97-4df612a2ef4e)
 
 # 128x64 ESP-WROOM-32
 
@@ -101,7 +104,8 @@ D1 is MOSI.
 
 
 # Generic SH1106 128x64 SPI
-__Hardware scroll Not support__   
+Many sellers sell SH1106 as SSD1306.   
+__SH1106 does not support hardware scrolling.__   
 Left:1.3 inch SH1106   
 Right:0.96 inch SSD1306   
 
@@ -116,11 +120,19 @@ Therefore, the maximum i2c clock frequency is 400KHz.
 The i2c clock frequency used by this project is 400KHz.   
 
 # I2C Port selection   
-![config-i2c-port](https://github.com/nopnop2002/esp-idf-ssd1306/assets/6020549/7a7de5ec-ef20-42ac-ba70-73ba74a762a7)
+![config-i2c-port](https://github.com/user-attachments/assets/477bdf29-7492-4256-bc9e-e3ff363cddcc)
 
-The ESP32 XTENSA series has two I2C Ports.   
+XTENSA's ESP32 has two i2c port: I2C_NUM_0/1.   
 You can use these two ports freely.   
 If you use this module at the same time as another I2C device using I2C port 0, you must change it to I2C port 1.   
+
+# Force legacy i2c driver
+XTENSA's ESP32 has two i2c port: I2C_NUM_0/1.   
+I2C_NUM_0/1 are initialized independently, but legacy i2c drivers and new i2c drivers cannot be mixed.   
+If I2C_NUM_0 is initialized with the legacy i2c driver, I2C_NUM_1 must also be initialized with the legacy i2c driver.   
+If you use the SSD1306 at the same time as other I2C devices that use legacy I2C drivers, the SSD1306 must also be initialized with the legacy I2C driver.   
+Enabling this will use the legacy i2c driver even after ESP-IDF V5.2.   
+![config-i2c-driver](https://github.com/user-attachments/assets/d07076d0-1c94-43d1-aa5a-aec810d2f7bc)
 
 ---
 
