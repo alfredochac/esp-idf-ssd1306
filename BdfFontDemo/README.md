@@ -114,8 +114,8 @@ FONTBOUNDINGBOX 21 26 -3 -6
 ```
 
 Each character has a character-specific bounding box (BBX).   
-This BBX value indicates that there should be a 1 pixel margin to the left of this character.   
-By providing a character-specific bounding box (BBX), this can omit the leftmost whitespace.   
+This BBX value indicates that this character is 8 dots wide by 12 dots high, and requires a 1 pixel margin to the left of this character.   
+By providing a character-specific bounding box (BBX), this can omit the left edge whitespace from the font pattern.   
 ```
 STARTCHAR d
 ENCODING 100
@@ -138,7 +138,7 @@ C6
 ENDCHAR
 ```
 
-Fonts that take character-specific bounding box (BBX) into consideration change as follows.   
+Fonts that take character-specific bounding boxes (BBX) into account can be modified as follows.   
 This creates a 1 pixel whitespace on the left edge.   
 DWIDTH will also change according to this change.   
 ```
@@ -170,7 +170,7 @@ STARTCHAR d
 ENCODING 100
 SWIDTH 574 0
 DWIDTH 14 0
-BBX 9 12 0 0
+BBX 14 26 0 0
 BITMAP
 00
 00
